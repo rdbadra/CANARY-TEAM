@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from src.model import ModelSelection
+from src.ensemble import Ensemble
 from src.data_treatment import DataTreatment
 
 
@@ -8,13 +9,26 @@ from xgboost import plot_importance
 
 import pandas as pd
 import numpy as np
+import time
 
-path = r"C:\Users\roberto.diaz.badra\Documents\Datathon\cajamar\Modelar_UH2020\Modelar_UH2020.txt"
+path = r"C:\Users\roberto.diaz.badra\Documents\Datathon\CANARY TEAM\Modelar_UH2020\Modelar_UH2020.txt"
 
 data = pd.read_csv(path, sep="|")
 
 data_treatment = DataTreatment()
 X_train, X_test, y_train, y_test = data_treatment.split_data(data)
+
+
+# start = time.time()
+# model = Ensemble(X_train, X_test, y_train, y_test,
+#                  number_of_models=20)
+# end = time.time()
+# print(f"TOOK: {end - start}")
+
+# report = model.report
+# confusion = model.confusion_matrix
+# print(confusion)
+# a = model.train
 
 search = ModelSelection(X_train, X_test, y_train, y_test)
 report = search.report

@@ -78,16 +78,30 @@ class DataTreatment:
 #             data.loc[data["CONTRUCTIONYEAR"] == target,
 #                      'MEDIAN_FLOOR_YEAR'] = value
 # =============================================================================
-        data["AREA_PER_FLOOR"] = data["AREA"] / data["MAXBUILDINGFLOOR"]
+        data["AREA_PER_FLOOR"] = data["AREA"] / (data["MAXBUILDINGFLOOR"] + 1)
         # data["r"] = np.sqrt((data["X"]**2) + data["Y"]**2)
         # data["theta"] = np.arctan(data["Y"] / data["X"])
         data["DIST"] = np.sqrt(((self.centroid_x - data["X"]) ** 2) +
                                ((self.centroid_y - data["Y"]) ** 2))
-        data["MEDIAN_DIST_FLOOR"] = 0
-        for target in self.median_dist_floor.index:
-            value = self.median_dist_floor.loc[target][0]
-            data.loc[data["CONTRUCTIONYEAR"] == target,
-                     'MEDIAN_DIST_FLOOR'] = value
+        # for i in data.index:
+        #     value = data.loc[i, "DIST"]
+        #     proportion = int((self.max_dist / value) / 71)
+        #     data.loc[i, "DIST_GROUP"] = proportion
+        # data["DIST_GROUP"] = 0
+        proportion = ((self.max_dist / data["DIST"]) / 10).astype(int)
+        data["DIST_GROUP"] = proportion
+        # data["MEDIAN_DIST_FLOOR"] = 0
+        # for target in self.median_dist_floor.index:
+        #     value = self.median_dist_floor.loc[target][0]
+        #     data.loc[data["CONTRUCTIONYEAR"] == target,
+        #              'MEDIAN_DIST_FLOOR'] = value
+        data["NEW_GROUP"] = 0
+        data.loc[data["DIST"] > 760146.0, "NEW_GROUP"] = 1
+        data.loc[(data["DIST"] > 340846.0) &
+                 (data["DIST"] <= 760146.0), "NEW_GROUP"] = 2
+        data.loc[(data["DIST"] > 329866.0) &
+                 (data["DIST"] <= 340846.0), "NEW_GROUP"] = 3
+        data.loc[data["DIST"] < 329866.0, "NEW_GROUP"] = 4
         data.drop(self.to_drop, axis=1, inplace=True)
         numeric = self.get_numeric(data)
         if "CLASE" not in data.columns:
@@ -139,7 +153,7 @@ class DataTreatment:
 #             data.loc[data["CONTRUCTIONYEAR"] == target,
 #                      'MEDIAN_FLOOR_YEAR'] = value
 # =============================================================================
-        data["AREA_PER_FLOOR"] = data["AREA"] / data["MAXBUILDINGFLOOR"]
+        data["AREA_PER_FLOOR"] = data["AREA"] / (data["MAXBUILDINGFLOOR"] + 1)
         # data["r"] = np.sqrt((data["X"]**2) + data["Y"]**2)
         # data["theta"] = np.arctan(data["Y"] / data["X"])
         # data["DIST"] = np.sqrt(((0 - data["X"]) ** 2) + ((0 - data["Y"]) ** 2))
@@ -147,15 +161,29 @@ class DataTreatment:
         self.centroid_y = np.sum(data["Y"]) / len(data)
         data["DIST"] = np.sqrt(((self.centroid_x - data["X"]) ** 2) +
                                ((self.centroid_y - data["Y"]) ** 2))
-        median_dist_floor = (data[["MAXBUILDINGFLOOR",
-                                   "DIST"]]
-                             .groupby("MAXBUILDINGFLOOR")
-                             .median())
-        self.median_dist_floor = median_dist_floor
-        for target in median_dist_floor.index:
-            value = median_dist_floor.loc[target][0]
-            data.loc[data["CONTRUCTIONYEAR"] == target,
-                     'MEDIAN_DIST_FLOOR'] = value
+        self.max_dist = data["DIST"].max()
+        # for i in data.index:
+        #     value = data.loc[i, "DIST"]
+        #     proportion = int((self.max_dist / value) / 71)
+        #     data.loc[i, "DIST_GROUP"] = proportion
+        proportion = ((self.max_dist / data["DIST"]) / 10).astype(int)
+        data["DIST_GROUP"] = proportion
+        data["NEW_GROUP"] = 0
+        data.loc[data["DIST"] > 760146, "NEW_GROUP"] = 1
+        data.loc[(data["DIST"] > 340846) &
+                 (data["DIST"] <= 760146), "NEW_GROUP"] = 2
+        data.loc[(data["DIST"] > 329866) &
+                 (data["DIST"] <= 340846), "NEW_GROUP"] = 3
+        data.loc[data["DIST"] < 329866, "NEW_GROUP"] = 4
+        # median_dist_floor = (data[["MAXBUILDINGFLOOR",
+        #                            "DIST"]]
+        #                      .groupby("MAXBUILDINGFLOOR")
+        #                      .median())
+        # self.median_dist_floor = median_dist_floor
+        # for target in median_dist_floor.index:
+        #     value = median_dist_floor.loc[target][0]
+        #     data.loc[data["CONTRUCTIONYEAR"] == target,
+        #              'MEDIAN_DIST_FLOOR'] = value
 
     def split_data(self, dataset):
         target = dataset["CLASE"]
